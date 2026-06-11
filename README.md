@@ -1,16 +1,108 @@
-# React + Vite
+# 🌌 Ultimate Tic Tac Toe
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, highly polished, dark-themed web implementation of **Ultimate (Super) Tic Tac Toe**. Play local offline pass-and-play with a friend beside you, or host/join online rooms instantly using zero-configuration, serverless peer-to-peer WebRTC connections.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ⚡ Features
 
-## React Compiler
+*   **Offline Mode:** Classic pass-and-play on the same device.
+*   **Online Multiplayer:** Host/join game rooms with simple 5-letter codes (no database, no account creation, no server deployments).
+*   **Real-time Chat:** Communicate with your online opponent via an in-game chat panel.
+*   **Synthesized Audio:** Realistic UI sound feedback (move plucks, micro wins, macro wins, errors) synthesized dynamically using the browser's native **Web Audio API** (requires no external `.mp3` loading).
+*   **Sleek Dark Theme:** Premium glassmorphism panels, glowing neon markers (Cyan for X, Pink for O, Emerald Green for active boards), and smooth pop-in animations.
+*   **In-Game Guide:** Interactive rules popup with live visual grid diagrams explaining the game.
+*   **SEO Optimized:** Built with semantic HTML, unique access IDs, responsive configurations, and meta-descriptions.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🎮 How to Play
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Ultimate Tic Tac Toe is played on a large 3x3 grid (the **Macro Board**), where each cell contains a smaller 3x3 grid (a **Micro Board**).
+
+1.  **The Target Rule:** When you make a move in any cell of a sub-grid, you send your opponent to the corresponding sub-board. 
+    *   *Example:* If you play in the **top-right cell** of a board, your opponent's next move **must** be placed somewhere in the **top-right board**.
+2.  **Winning Sub-Boards:** Getting 3-in-a-row on a Micro Board wins that board. It gets locked and covered with your giant, glowing marker.
+3.  **The Wildcard:** If you are sent to a Micro Board that is already won or fully tied, you get a **Wildcard** and can play in **any** available board on the map.
+4.  **Victory:** The overall game is won when you secure three Micro Boards in a line (horizontal, vertical, or diagonal) on the Macro Board.
+
+---
+
+## 🛠️ Technology Stack
+
+*   **Core Logic:** JavaScript (ES6+), React 18
+*   **Build Tool:** Vite
+*   **Styling:** Vanilla CSS (CSS variables, backdrop blur filters, keyframe pulse animations)
+*   **Icons:** Lucide React
+*   **Real-time Networking:** PeerJS (WebRTC client wrapper)
+*   **Audio Synthesis:** Web Audio API (Oscillators, Gain nodes, Frequency sweeps)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Ensure you have [Node.js](https://nodejs.org/) installed.
+
+### Installation
+
+1. Clone or navigate to the project directory:
+   ```bash
+   cd super-tic-tac-toe
+   ```
+
+2. Install the dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the local development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open `http://localhost:5173` in your browser to play!
+
+---
+
+## 📦 Production Build
+
+To build a minimized, production-ready static bundle:
+
+```bash
+npm run build
+```
+
+The output assets will be saved to the `/dist` directory.
+
+---
+
+## ☁️ Free Deployment Guide
+
+Because this app utilizes direct WebRTC peer connections (via public PeerJS signaling servers), the entire project is compiled into **100% static assets**. It doesn't require a dedicated Node backend or database, making it eligible for **permanent free hosting** on the following platforms:
+
+### Option 1: Vercel (Recommended)
+1. Install the Vercel CLI:
+   ```bash
+   npm install -g vercel
+   ```
+2. Run the deployment command in your project root:
+   ```bash
+   vercel
+   ```
+3. Follow the prompts (press Enter to accept default settings). Vercel automatically detects the Vite React environment, compiles the project, and gives you a free `.vercel.app` URL.
+
+### Option 2: Netlify
+1. Compile the production code:
+   ```bash
+   npm run build
+   ```
+2. Go to [Netlify Drop](https://app.netlify.com/drop).
+3. Drag and drop the generated `dist` folder onto the web page. Your site will deploy instantly.
+
+### Option 3: GitHub Pages
+1. Push the code to a GitHub repository.
+2. Go to repository **Settings** -> **Pages**.
+3. Under **Build and deployment**, select **GitHub Actions** as the source.
+4. Select the default **Vite** config or push to a `gh-pages` branch using the `gh-pages` npm utility.
