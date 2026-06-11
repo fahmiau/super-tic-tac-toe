@@ -221,6 +221,11 @@ export default function App() {
     joinRoom(code);
   };
 
+  const handleCancelOnlineGame = () => {
+    setIsOnline(false);
+    leaveRoom();
+  };
+
   const isMyTurn = isOnline && (gameState.currentPlayer === mySymbol);
 
   return (
@@ -282,6 +287,7 @@ export default function App() {
           onJoinOnlineGame={handleJoinOnlineGame}
           onStartOfflineGame={handleStartOfflineGame}
           onShowRules={() => setRulesOpen(true)}
+          onCancelOnlineGame={handleCancelOnlineGame}
           peerError={peerError}
           isConnecting={isOnline && connectionStatus === 'connecting'}
         />

@@ -7,6 +7,7 @@ export default function Menu({
   onJoinOnlineGame, 
   onStartOfflineGame,
   onShowRules,
+  onCancelOnlineGame,
   peerError,
   isConnecting
 }) {
@@ -57,6 +58,9 @@ export default function Menu({
     setOnlineMode(null);
     setGeneratedCode('');
     setJoinCodeInput('');
+    if (onCancelOnlineGame) {
+      onCancelOnlineGame();
+    }
   };
 
   return (
