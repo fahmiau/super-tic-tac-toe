@@ -75,34 +75,3 @@ npm run build
 ```
 
 The output assets will be saved to the `/dist` directory.
-
----
-
-## ☁️ Free Deployment Guide
-
-Because this app utilizes direct WebRTC peer connections (via public PeerJS signaling servers), the entire project is compiled into **100% static assets**. It doesn't require a dedicated Node backend or database, making it eligible for **permanent free hosting** on the following platforms:
-
-### Option 1: Vercel (Recommended)
-1. Install the Vercel CLI:
-   ```bash
-   npm install -g vercel
-   ```
-2. Run the deployment command in your project root:
-   ```bash
-   vercel
-   ```
-3. Follow the prompts (press Enter to accept default settings). Vercel automatically detects the Vite React environment, compiles the project, and gives you a free `.vercel.app` URL.
-
-### Option 2: Netlify
-1. Compile the production code:
-   ```bash
-   npm run build
-   ```
-2. Go to [Netlify Drop](https://app.netlify.com/drop).
-3. Drag and drop the generated `dist` folder onto the web page. Your site will deploy instantly.
-
-### Option 3: GitHub Pages
-1. Push the code to a GitHub repository.
-2. Go to repository **Settings** -> **Pages**.
-3. Under **Build and deployment**, select **GitHub Actions** as the source.
-4. Select the default **Vite** config or push to a `gh-pages` branch using the `gh-pages` npm utility.
