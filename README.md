@@ -74,4 +74,4 @@ To build a minimized, production-ready static bundle:
 npm run build
 ```
 
-The output assets will be saved to the `/dist` directory.
+The output assets will be saved to the `/dist` directory. 
