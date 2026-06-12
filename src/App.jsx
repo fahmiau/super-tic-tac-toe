@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Volume2, 
   VolumeX, 
@@ -25,6 +25,7 @@ import {
   toggleMute,
   getMuteState 
 } from './utils/sounds';
+import { getBestMove } from './utils/ai';
 
 // Components
 import Menu from './components/Menu';
@@ -45,6 +46,14 @@ export default function App() {
 
   // Game Engine State
   const [gameState, setGameState] = useState(getInitialState());
+
+  // Solo Mode AI State
+  const [isSolo, setIsSolo] = useState(false);
+  const [aiDifficulty, setAiDifficulty] = useState('medium');
+  const [isAiThinking, setIsAiThinking] = useState(false);
+
+  // Refs
+  const moveLogRef = useRef(null);
 
   // Sound triggers on state changes
   const applyMoveState = useCallback((nextState, previousState) => {
@@ -141,12 +150,97 @@ export default function App() {
     }
   }, [gameState.currentPlayer, isOnline, isHost, connectionStatus, sendStateSync]);
 
+  // Solo AI Player Turn Handler
+  useEffect(() => {
+    if (isSolo && gameState.currentPlayer === 'O' && !gameState.winner) {
+      if (!isAiThinking) {
+        // Set thinking state asynchronously to avoid React cascading render warning
+        const timer = setTimeout(() => {
+          setIsAiThinking(true);
+        }, 0);
+        return () => clearTimeout(timer);
+      }
+      
+      const start = Date.now();
+      
+      // Run AI logic in a brief timeout to let React update the "Computer is thinking" UI
+      const timer = setTimeout(() => {
+        const aiMove = getBestMove(gameState, aiDifficulty);
+        
+        if (aiMove) {
+          const elapsed = Date.now() - start;
+          const remainingDelay = Math.max(700 - elapsed, 0); // Keep thinking natural-looking (at least 700ms)
+          
+          setTimeout(() => {
+            setGameState(prevState => {
+              // Verify the board state has not changed since calculation started
+              if (
+                prevState.currentPlayer !== 'O' || 
+                prevState.history.length !== gameState.history.length ||
+                prevState.winner
+              ) {
+                setIsAiThinking(false);
+                return prevState;
+              }
+              
+              if (!isValidMove(prevState, aiMove.boardIndex, aiMove.cellIndex)) {
+                setIsAiThinking(false);
+                return prevState;
+              }
+              
+              const nextState = makeMove(prevState, aiMove.boardIndex, aiMove.cellIndex);
+              
+              // Play sounds & check winning sub-board
+              playMoveSound();
+              
+              let subBoardWon = false;
+              for (let i = 0; i < 9; i++) {
+                if (nextState.macroBoard[i] !== prevState.macroBoard[i]) {
+                  subBoardWon = true;
+                  break;
+                }
+              }
+              
+              if (nextState.winner) {
+                playMacroWinSound();
+              } else if (subBoardWon) {
+                playMicroWinSound();
+              }
+              
+              setIsAiThinking(false);
+              return nextState;
+            });
+          }, remainingDelay);
+        } else {
+          setIsAiThinking(false);
+        }
+      }, 50);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSolo, gameState, aiDifficulty, isAiThinking]);
+
+  // Auto-scroll move log to bottom on new moves
+  useEffect(() => {
+    if (moveLogRef.current) {
+      moveLogRef.current.scrollTop = moveLogRef.current.scrollHeight;
+    }
+  }, [gameState.history]);
+
   // Click cell callback
   const handleCellClick = (boardIndex, cellIndex) => {
     // Check local turn in online mode
     if (isOnline) {
       if (connectionStatus !== 'connected') return;
       if (gameState.currentPlayer !== mySymbol) {
+        playErrorSound();
+        return;
+      }
+    }
+
+    // Check turn in Solo mode
+    if (isSolo) {
+      if (gameState.currentPlayer !== 'X' || isAiThinking) {
         playErrorSound();
         return;
       }
@@ -171,6 +265,7 @@ export default function App() {
     playMoveSound();
     const cleanState = getInitialState();
     setGameState(cleanState);
+    setIsAiThinking(false);
     if (isOnline) {
       sendRestart();
     }
@@ -182,6 +277,8 @@ export default function App() {
       leaveRoom();
     }
     setIsOnline(false);
+    setIsSolo(false);
+    setIsAiThinking(false);
     setScreen('menu');
     setGameState(getInitialState());
   };
@@ -205,6 +302,17 @@ export default function App() {
   const handleStartOfflineGame = () => {
     playMoveSound();
     setIsOnline(false);
+    setIsSolo(false);
+    setScreen('playing');
+    setGameState(getInitialState());
+  };
+
+  // Start Solo VS Computer
+  const handleStartSoloGame = (difficulty) => {
+    playMoveSound();
+    setIsOnline(false);
+    setIsSolo(true);
+    setAiDifficulty(difficulty);
     setScreen('playing');
     setGameState(getInitialState());
   };
@@ -212,17 +320,20 @@ export default function App() {
   // Start Online (Host)
   const handleCreateOnlineGame = (code) => {
     setIsOnline(true);
+    setIsSolo(false);
     createRoom(code);
   };
 
   // Start Online (Join)
   const handleJoinOnlineGame = (code) => {
     setIsOnline(true);
+    setIsSolo(false);
     joinRoom(code);
   };
 
   const handleCancelOnlineGame = () => {
     setIsOnline(false);
+    setIsSolo(false);
     leaveRoom();
   };
 
@@ -243,8 +354,8 @@ export default function App() {
             </button>
             
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span className="font-display" style={{ fontSize: '1rem', fontWeight: 'bold' }}>
-                {isOnline ? `Room: ${roomCode}` : 'Local Match'}
+              <span className="font-display" style={{ fontSize: '1rem', fontWeight: 'bold', textTransform: 'capitalize' }}>
+                {isOnline ? `Room: ${roomCode}` : (isSolo ? `Solo: ${aiDifficulty}` : 'Local Match')}
               </span>
               {isOnline && (
                 <div className={`connection-indicator ${connectionStatus}`}>
@@ -286,6 +397,7 @@ export default function App() {
           onCreateOnlineGame={handleCreateOnlineGame}
           onJoinOnlineGame={handleJoinOnlineGame}
           onStartOfflineGame={handleStartOfflineGame}
+          onStartSoloGame={handleStartSoloGame}
           onShowRules={() => setRulesOpen(true)}
           onCancelOnlineGame={handleCancelOnlineGame}
           peerError={peerError}
@@ -295,7 +407,7 @@ export default function App() {
         <div className="game-layout fade-in">
           
           {/* Top Info HUD */}
-          <div className="status-panel glass-panel" style={{ width: '100%', maxWidth: '980px' }}>
+          <div className="status-panel glass-panel">
             <div className="status-row">
               <div className="player-turn-indicator">
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Turn:</span>
@@ -303,14 +415,14 @@ export default function App() {
                 <div className={`player-badge badge-x ${gameState.currentPlayer === 'X' ? 'active' : ''}`}>
                   <span className="text-x">X</span>
                   <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                    {isOnline ? (isHost ? 'You' : 'Opponent') : 'Player X'}
+                    {isOnline ? (isHost ? 'You' : 'Opponent') : (isSolo ? 'You' : 'Player X')}
                   </span>
                 </div>
 
                 <div className={`player-badge badge-o ${gameState.currentPlayer === 'O' ? 'active' : ''}`}>
                   <span className="text-o">O</span>
-                  <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>
-                    {isOnline ? (!isHost ? 'You' : 'Opponent') : 'Player O'}
+                  <span style={{ fontSize: '0.8rem', opacity: 0.8, textTransform: 'capitalize' }}>
+                    {isOnline ? (!isHost ? 'You' : 'Opponent') : (isSolo ? `AI (${aiDifficulty})` : 'Player O')}
                   </span>
                 </div>
               </div>
@@ -329,7 +441,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Online Turn Callouts */}
+            {/* Turn Callouts */}
             {isOnline && connectionStatus === 'connected' && (
               <div style={{ 
                 borderTop: '1px solid rgba(255,255,255,0.04)', 
@@ -340,6 +452,19 @@ export default function App() {
                 fontWeight: isMyTurn ? 'bold' : 'normal'
               }}>
                 {isMyTurn ? '▲ YOUR TURN TO MOVE ▲' : '▼ Opponent is thinking... ▼'}
+              </div>
+            )}
+
+            {isSolo && !gameState.winner && (
+              <div style={{ 
+                borderTop: '1px solid rgba(255,255,255,0.04)', 
+                paddingTop: '0.5rem', 
+                fontSize: '0.85rem', 
+                textAlign: 'center',
+                color: isAiThinking ? 'var(--color-o)' : 'var(--color-active)',
+                fontWeight: 'bold'
+              }}>
+                {isAiThinking ? '▼ Computer is thinking... ▼' : '▲ YOUR TURN TO MOVE ▲'}
               </div>
             )}
           </div>
@@ -361,7 +486,7 @@ export default function App() {
             </div>
 
             {/* Side tools: Logs and chat */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className="side-tools-container">
               {isOnline && (
                 <Chat 
                   messages={chatMessages} 
@@ -370,9 +495,9 @@ export default function App() {
               )}
 
               {/* Move history log */}
-              <div className="glass-panel" style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', minHeight: '180px' }}>
+              <div className="glass-panel move-log-panel">
                 <span className="form-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Move Log</span>
-                <div className="history-list" style={{ flex: 1 }}>
+                <div ref={moveLogRef} className="history-list" style={{ flex: 1 }}>
                   {gameState.history.length === 0 ? (
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', padding: '1rem' }}>
                       No moves recorded.

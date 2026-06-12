@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
-import { Users, Wifi, Globe, Copy, Check, BookOpen, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Users, Wifi, Globe, Copy, Check, BookOpen, AlertCircle, Cpu } from 'lucide-react';
 import { playMoveSound, playJoinSound } from '../utils/sounds';
 
-export default function Menu({ 
-  onCreateOnlineGame, 
-  onJoinOnlineGame, 
+export default function Menu({
+  onCreateOnlineGame,
+  onJoinOnlineGame,
   onStartOfflineGame,
+  onStartSoloGame,
   onShowRules,
   onCancelOnlineGame,
   peerError,
   isConnecting
 }) {
   const [onlineMode, setOnlineMode] = useState(null); // 'host', 'join', or null
+  const [showSoloDifficulty, setShowSoloDifficulty] = useState(false);
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [copied, setCopied] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
@@ -66,13 +68,50 @@ export default function Menu({
   return (
     <div className="menu-card glass-panel fade-in">
       <div className="logo-container">
-        <h1 className="logo-main">Ultimate</h1>
+        <h1 className="logo-main">Super</h1>
         <div className="logo-sub">Tic Tac Toe</div>
       </div>
 
-      {onlineMode === null ? (
+      {showSoloDifficulty ? (
+        <div className="online-form" style={{ textAlign: 'center' }}>
+          <h3 className="font-display" style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--accent-purple)', textShadow: '0 0 8px rgba(139, 92, 246, 0.4)', textTransform: 'uppercase' }}>
+            Select Difficulty
+          </h3>
+
+          <div className="menu-buttons" style={{ marginTop: '1rem' }}>
+            <button
+              className="btn btn-success"
+              onClick={() => { playMoveSound(); onStartSoloGame('easy'); }}
+            >
+              <span>Easy AI</span>
+            </button>
+
+            <button
+              className="btn btn-warning"
+              onClick={() => { playMoveSound(); onStartSoloGame('medium'); }}
+            >
+              <span>Medium AI</span>
+            </button>
+
+            <button
+              className="btn btn-secondary"
+              onClick={() => { playMoveSound(); onStartSoloGame('hard'); }}
+            >
+              <span>Hard AI</span>
+            </button>
+
+            <button
+              className="btn"
+              onClick={() => { playMoveSound(); setShowSoloDifficulty(false); }}
+              style={{ marginTop: '1rem', border: '1px dashed rgba(255,255,255,0.08)' }}
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      ) : onlineMode === null ? (
         <div className="menu-buttons">
-          <button 
+          <button
             className="btn btn-primary"
             onClick={onStartOfflineGame}
           >
@@ -80,7 +119,15 @@ export default function Menu({
             <span>Play Local Offline</span>
           </button>
 
-          <button 
+          <button
+            className="btn btn-purple"
+            onClick={() => { playMoveSound(); setShowSoloDifficulty(true); }}
+          >
+            <Cpu size={20} />
+            <span>Play VS Computer</span>
+          </button>
+
+          <button
             className="btn btn-secondary"
             onClick={handleStartHost}
           >
@@ -88,7 +135,7 @@ export default function Menu({
             <span>Host Online Game</span>
           </button>
 
-          <button 
+          <button
             className="btn"
             onClick={handleStartJoin}
           >
@@ -96,7 +143,7 @@ export default function Menu({
             <span>Join Online Game</span>
           </button>
 
-          <button 
+          <button
             className="btn"
             onClick={onShowRules}
             style={{ marginTop: '1rem', border: '1px dashed rgba(255,255,255,0.08)' }}
@@ -110,13 +157,13 @@ export default function Menu({
           <h3 className="font-display" style={{ fontSize: '1.2rem', marginBottom: '0.5rem', color: 'var(--color-o)' }}>
             Hosting Online Match
           </h3>
-          
+
           <div className="form-group">
             <span className="form-label">Share this room code:</span>
             <div className="room-code-display">
               <span className="room-code-text">{generatedCode}</span>
-              <button 
-                className="btn btn-icon-only" 
+              <button
+                className="btn btn-icon-only"
                 onClick={handleCopyCode}
                 style={{ padding: '0.5rem', position: 'relative' }}
                 title="Copy Room Code"
@@ -132,7 +179,7 @@ export default function Menu({
               <span className="dot-pulse" style={{ marginRight: '6px' }}></span>
               Waiting for Guest to Connect...
             </div>
-            
+
             {peerError && (
               <div style={{ display: 'flex', gap: '0.5rem', color: 'var(--color-o)', fontSize: '0.85rem', marginTop: '0.5rem', alignItems: 'center' }}>
                 <AlertCircle size={16} />
@@ -141,8 +188,8 @@ export default function Menu({
             )}
           </div>
 
-          <button 
-            className="btn" 
+          <button
+            className="btn"
             onClick={handleBackToOptions}
             style={{ marginTop: '1rem', width: '100%' }}
           >
@@ -180,18 +227,18 @@ export default function Menu({
           )}
 
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-            <button 
-              type="button" 
-              className="btn" 
+            <button
+              type="button"
+              className="btn"
               onClick={handleBackToOptions}
               disabled={isConnecting}
               style={{ flex: 1 }}
             >
               Back
             </button>
-            
-            <button 
-              type="submit" 
+
+            <button
+              type="submit"
               className="btn btn-primary"
               disabled={isConnecting || !joinCodeInput.trim()}
               style={{ flex: 2 }}
