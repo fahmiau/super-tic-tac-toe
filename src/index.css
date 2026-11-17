@@ -499,12 +499,15 @@ h1, h2, h3, .font-display {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .player-turn-indicator {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .player-badge {
@@ -925,3 +928,292 @@ h1, h2, h3, .font-display {
 }
 
 
+/* Game Variant Selector */
+.variant-selector-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.variant-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+}
+
+.variant-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.85rem 0.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+}
+
+.variant-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.variant-icon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 0.1rem;
+}
+
+.variant-card-title {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.variant-card-sub {
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+.variant-card.variant-super.selected {
+  background: rgba(0, 242, 254, 0.1);
+  border-color: var(--color-x);
+  color: var(--color-x);
+  box-shadow: 0 0 16px rgba(0, 242, 254, 0.2);
+}
+
+.variant-card.variant-classic.selected {
+  background: rgba(139, 92, 246, 0.14);
+  border-color: #a78bfa;
+  color: #c4b5fd;
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);
+}
+
+.variant-card.variant-moving.selected {
+  background: rgba(255, 42, 133, 0.1);
+  border-color: var(--color-o);
+  color: var(--color-o);
+  box-shadow: 0 0 16px rgba(255, 42, 133, 0.2);
+}
+
+.variant-description {
+  margin-top: 0.7rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  min-height: 2.3em;
+}
+
+.variant-pill {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #c4b5fd;
+}
+
+/* Rules Modal Tabs */
+.rules-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.35rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rules-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: 0.55rem 0.5rem;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rules-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rules-tab-btn.active {
+  background: rgba(0, 242, 254, 0.12);
+  border-color: rgba(0, 242, 254, 0.35);
+  color: var(--color-x);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.15);
+}
+
+/* Standard 3x3 Board (Classic & 3-Piece Shift) */
+.standard-board-wrapper {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.standard-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  padding: 14px;
+  border-radius: 22px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.standard-board.active {
+  border-color: rgba(5, 255, 155, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 24px rgba(5, 255, 155, 0.08);
+}
+
+.standard-cell {
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.standard-cell:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: scale(1.03);
+}
+
+.standard-cell:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.standard-cell .cell-icon {
+  width: 58%;
+  height: 58%;
+}
+
+/* Hover Preview */
+.cell .hover-preview {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.cell:not(:disabled):hover .hover-preview {
+  opacity: 0.28;
+}
+
+/* Winning Cell Highlight */
+.cell.winning-cell {
+  background: rgba(5, 255, 155, 0.12);
+  border-color: rgba(5, 255, 155, 0.55);
+  box-shadow: 0 0 18px rgba(5, 255, 155, 0.22);
+}
+
+/* 3-Piece Shift Selection & Movement States */
+.standard-cell.selectable-piece {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.standard-cell.selectable-piece:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.12);
+}
+
+.standard-cell.selected-piece {
+  transform: scale(1.04);
+  z-index: 2;
+}
+
+.standard-cell.selected-piece.selected-x {
+  background: rgba(0, 242, 254, 0.14);
+  border-color: var(--color-x);
+  box-shadow: 0 0 20px var(--color-x-glow), inset 0 0 12px rgba(0, 242, 254, 0.15);
+}
+
+.standard-cell.selected-piece.selected-o {
+  background: rgba(255, 42, 133, 0.14);
+  border-color: var(--color-o);
+  box-shadow: 0 0 20px var(--color-o-glow), inset 0 0 12px rgba(255, 42, 133, 0.15);
+}
+
+.standard-cell.valid-destination {
+  border-style: dashed;
+  border-color: rgba(5, 255, 155, 0.45);
+  background: rgba(5, 255, 155, 0.04);
+}
+
+.standard-cell.valid-destination:hover {
+  border-style: solid;
+  border-color: var(--color-active);
+  background: rgba(5, 255, 155, 0.1);
+  box-shadow: 0 0 16px var(--color-active-glow);
+}
+
+.standard-cell.last-move-to {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.last-move-origin-marker {
+  width: 20%;
+  height: 20%;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+
+/* Piece Count Pips for 3-Piece Shift */
+.piece-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+}
+
+.piece-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+
+.piece-pip.filled.x {
+  background: var(--color-x);
+  box-shadow: 0 0 6px var(--color-x-glow);
+}
+
+.piece-pip.filled.o {
+  background: var(--color-o);
+  box-shadow: 0 0 6px var(--color-o-glow);
+}
+
+/* Hint Banner */
+.move-hint-banner {
+  border-top: 1px solid rgba(245, 158, 11, 0.15);
+  padding-top: 0.5rem;
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--accent-amber);
+  font-weight: 600;
+}

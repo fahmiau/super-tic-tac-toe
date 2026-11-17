@@ -14,6 +14,7 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
   
   const connRef = useRef(null);
   const peerRef = useRef(null);
+  const isHostRef = useRef(false);
 
   // Clean up WebRTC connection on unmount
   useEffect(() => {
@@ -31,6 +32,7 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
       peerRef.current.destroy();
       peerRef.current = null;
     }
+    isHostRef.current = false;
     setConn(null);
     setPeer(null);
     setConnectionStatus('disconnected');
@@ -52,7 +54,7 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
       // Add a system chat message that connection is established
       setChatMessages(prev => [...prev, { 
         type: 'system', 
-        text: isHost ? 'Guest connected! You are Player X (Cyan)' : 'Connected to host! You are Player O (Pink)' 
+        text: isHostRef.current ? 'Guest connected! You are Player X (Cyan)' : 'Connected to host! You are Player O (Pink)' 
       }]);
     });
 
@@ -62,12 +64,13 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
       switch (data.type) {
         case 'MOVE':
           if (onMoveReceived) {
-            onMoveReceived(data.boardIndex, data.cellIndex);
+            const move = data.move ?? { boardIndex: data.boardIndex, cellIndex: data.cellIndex };
+            onMoveReceived(move);
           }
           break;
         case 'RESTART':
           if (onRestartReceived) {
-            onRestartReceived();
+            onRestartReceived(data.variant);
           }
           setChatMessages(prev => [...prev, { type: 'system', text: 'Opponent restarted the game.' }]);
           break;
@@ -95,11 +98,12 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
       console.error('Connection error:', err);
       setError('Connection error occurred.');
     });
-  }, [isHost, onMoveReceived, onRestartReceived, onStateSyncReceived]);
+  }, [onMoveReceived, onRestartReceived, onStateSyncReceived]);
 
   // Create a room (Host)
   const createRoom = useCallback((code) => {
     cleanup();
+    isHostRef.current = true;
     setIsHost(true);
     setRoomCode(code);
     setConnectionStatus('connecting');
@@ -138,6 +142,7 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
   // Join a room (Guest)
   const joinRoom = useCallback((code) => {
     cleanup();
+    isHostRef.current = false;
     setIsHost(false);
     setRoomCode(code);
     setConnectionStatus('connecting');
@@ -171,12 +176,11 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
   }, [setupConnection]);
 
   // Send an in-game move
-  const sendMove = useCallback((boardIndex, cellIndex) => {
+  const sendMove = useCallback((move) => {
     if (connRef.current && connectionStatus === 'connected') {
       connRef.current.send({
         type: 'MOVE',
-        boardIndex,
-        cellIndex
+        move
       });
     }
   }, [connectionStatus]);
@@ -192,10 +196,11 @@ export function usePeer(onMoveReceived, onRestartReceived, onStateSyncReceived) 
   }, [connectionStatus]);
 
   // Request a game restart
-  const sendRestart = useCallback(() => {
+  const sendRestart = useCallback((variant) => {
     if (connRef.current && connectionStatus === 'connected') {
       connRef.current.send({
-        type: 'RESTART'
+        type: 'RESTART',
+        variant
       });
       setChatMessages(prev => [...prev, { type: 'system', text: 'You restarted the game.' }]);
     }

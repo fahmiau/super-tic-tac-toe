@@ -1,7 +1,7 @@
 import React from 'react';
 import { RefreshCw, Home, Award } from 'lucide-react';
 
-export default function GameOverlay({ winner, onRestart, onBackToMenu, isOnline, isHost }) {
+export default function GameOverlay({ winner, onRestart, onBackToMenu, isOnline, isHost, isSolo }) {
   
   const renderX = () => (
     <svg className="board-win-icon text-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ width: '80px', height: '80px', strokeWidth: 2 }}>
@@ -20,6 +20,9 @@ export default function GameOverlay({ winner, onRestart, onBackToMenu, isOnline,
     if (isOnline) {
       const isWinnerMe = (winner === 'X' && isHost) || (winner === 'O' && !isHost);
       return isWinnerMe ? 'Victory is Yours!' : 'Opponent Wins!';
+    }
+    if (isSolo) {
+      return winner === 'X' ? 'You Win!' : 'Computer Wins!';
     }
     return `Player ${winner} Wins!`;
   };
